@@ -3,6 +3,19 @@
 HEADER_HEIGHT=3
 PREFIX="${PASSWORD_STORE_DIR:-$HOME/.password-store}"
 
+function showPaths() {
+    local keyword="$1"
+    local row="$2"
+
+    local field_height=$(expr $(tput lines) - $HEADER_HEIGHT - 1)
+    local path_list=$(find -L -name "*${1}*" -iname '*.gpg')
+    
+    echo "$path_list" | head -n "$field_height"
+    tput rev
+    echo "$path_list" | tail -n $(expr "$row" - 0)
+    tput sgr0
+}
+
 unset keyword
 row=0
 
@@ -66,8 +79,5 @@ while [[ true ]]; do
             ;;
     esac
 
-
-    pass_field_height=$(expr $(tput lines) - $HEADER_HEIGHT - 1)
-
-    find -L -name "*${keyword}*" -iname '*.gpg' | head -n "$pass_field_height"
+    showPaths "$keyword" $row
 done

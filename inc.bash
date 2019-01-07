@@ -4,6 +4,7 @@ HEADER_HEIGHT=3
 PREFIX="${PASSWORD_STORE_DIR:-$HOME/.password-store}"
 
 unset keyword
+row=0
 
 tput init
 tput clear
@@ -17,6 +18,14 @@ while [[ true ]]; do
     tput clear
     tput cup $HEADER_HEIGHT 0
 
+    if [[ "$c" = $'\e' ]]; then
+        # Escape Character
+        read -sN1 -t 0.0001 k1
+        read -sN1 -t 0.0001 k2
+        read -sN1 -t 0.0001 k3
+        c+="$k1$k2$k3"
+    fi
+
     case $c in
         $'\b'|$'\x7f') # BackSpace
             if [[ "$keyword" = "" ]]; then
@@ -28,7 +37,19 @@ while [[ true ]]; do
             # Clear line
             keyword=
             ;;
-        $'\cp'|$'\cn'|$'\c['|$'\cl') # Ignore
+        $'\cl') # Ignore
+            ;;
+        $'\cp'|$'\e[A'|$'\e0A'|$'\e[D'|$'\e0D') # Up
+            echo "UP"
+            ;;
+        $'\cn'|$'\e[B'|$'\e0B'|$'\e[C'|$'\e0C') # Down
+            echo "DOWN"
+            ;;
+        $'\e[1~'|$'\e0H'|$'\e[H')  # Home
+            echo "HOME"
+            ;;
+        $'\e[4~'|$'\e0F'|$'\e[F')  # End
+            echo "END"
             ;;
         $'\x0a') # Enter
             echo "Enter pressed"
@@ -37,6 +58,8 @@ while [[ true ]]; do
         $'\e'|$'\cd') # ESC or Ctrl-D
             echo "Canceled"
             break
+            ;;
+        $'\e'*) # Other escape sequence
             ;;
         *)
             keyword+="$c"

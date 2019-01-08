@@ -20,7 +20,7 @@ unset path_list
 cur=1
 
 function updatePathList() {
-    path_list=$(find -L -name "*${keyword}*" -iname '*.gpg' | sed -e "s/^\.\///" -e "s/\.gpg$//")
+    path_list=$(find -L -path "*${keyword}*" -iname '*.gpg' | sed -e "s/^\.\///" -e "s/\.gpg$//")
 }
 
 tput init

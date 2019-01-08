@@ -2,7 +2,7 @@
 
 HEADER_HEIGHT=3
 
-function showPaths() {
+function showPaths {
     path_list=$1
     field_height=$2
     cur=$3
@@ -19,7 +19,9 @@ unset keyword
 unset path_list
 cur=1
 
-function updatePathList() {
+function updateKeyword {
+    keyword=$1
+    cur=0
     path_list=$(find -L -path "*${keyword// /*}*" -iname '*.gpg' | sed -e "s/^\.\///" -e "s/\.gpg$//")
 }
 
@@ -56,13 +58,11 @@ while [[ true ]]; do
             if [[ "$keyword" = "" ]]; then
                 continue
             fi
-            keyword=${keyword::-1}
-            updatePathList
+            updateKeyword ${keyword::-1}
             ;;
         $'\cu')
             # Clear line
-            keyword=
-            updatePathList
+            updateKeyword ""
             ;;
         $'\cl') # Ignore
             ;;
@@ -86,8 +86,7 @@ while [[ true ]]; do
         $'\e'*) # Other escape sequence
             ;;
         *)
-            keyword+="$c"
-            updatePathList
+            updateKeyword "$keyword$c"
             ;;
     esac
 done

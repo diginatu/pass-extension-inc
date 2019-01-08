@@ -1,23 +1,27 @@
 #!/bin/bash
 
 HEADER_HEIGHT=3
-PREFIX="${PASSWORD_STORE_DIR:-$HOME/.password-store}"
 
 function showPaths() {
-    local keyword="$1"
-    local row="$2"
+    path_list=$1
+    field_height=$2
+    cur=$3
 
-    local field_height=$(expr $(tput lines) - $HEADER_HEIGHT - 1)
-    local path_list=$(find -L -name "*${1}*" -iname '*.gpg')
-    
-    echo "$path_list" | head -n "$field_height"
+    echo "$path_list" | head -n $field_height
+    tput cup $(($HEADER_HEIGHT + $cur - 1)) 0
     tput rev
-    echo "$path_list" | tail -n $(expr "$row" - 0)
+    echo "$distpath"
     tput sgr0
 }
 
+unset distpath
 unset keyword
-row=0
+unset path_list
+cur=1
+
+function updatePathList() {
+    path_list=$(find -L -name "*${keyword}*" -iname '*.gpg')
+}
 
 tput init
 tput clear
@@ -45,24 +49,20 @@ while [[ true ]]; do
                 continue
             fi
             keyword=${keyword::-1}
+            updatePathList
             ;;
         $'\cu')
             # Clear line
             keyword=
+            updatePathList
             ;;
         $'\cl') # Ignore
             ;;
         $'\cp'|$'\e[A'|$'\e0A'|$'\e[D'|$'\e0D') # Up
-            echo "UP"
+            ((cur > 1)) && ((cur--))
             ;;
         $'\cn'|$'\e[B'|$'\e0B'|$'\e[C'|$'\e0C') # Down
-            echo "DOWN"
-            ;;
-        $'\e[1~'|$'\e0H'|$'\e[H')  # Home
-            echo "HOME"
-            ;;
-        $'\e[4~'|$'\e0F'|$'\e[F')  # End
-            echo "END"
+            ((cur++))
             ;;
         $'\x0a') # Enter
             echo "Enter pressed"
@@ -76,8 +76,16 @@ while [[ true ]]; do
             ;;
         *)
             keyword+="$c"
+            updatePathList
             ;;
     esac
 
-    showPaths "$keyword" $row
+    # Calculate number of lines and cursor position to show
+    field_height=$(($(tput lines) - $HEADER_HEIGHT - 1))
+    path_list_height=$(echo "$path_list" | wc -l)
+    (($path_list_height > $field_height)) && path_list_height=$field_height
+    (($path_list_height < $cur)) && cur=$path_list_height
+    distpath=$(echo "$path_list" | sed -n "${cur}p")
+
+    showPaths "$path_list" "$field_height" "$cur"
 done

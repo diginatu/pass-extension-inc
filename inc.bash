@@ -28,12 +28,20 @@ tput clear
 cd $PREFIX
 
 while [[ true ]]; do
-    tput cup 0 0
-    echo -n "Keyword: $keyword"
-    IFS= read -r -s -N 1 c
+    # Calculate number of lines and cursor position to show
+    field_height=$(($(tput lines) - $HEADER_HEIGHT - 1))
+    path_list_height=$(echo "$path_list" | wc -l)
+    (($path_list_height > $field_height)) && path_list_height=$field_height
+    (($path_list_height < $cur)) && cur=$path_list_height
+    distpath=$(echo "$path_list" | sed -n "${cur}p")
 
+    tput civis
     tput clear
     tput cup $HEADER_HEIGHT 0
+    showPaths "$path_list" "$field_height" "$cur"
+    tput cup 0 0
+    tput cnorm
+    IFS= read -p "Keyword: $keyword" -r -s -N 1 c
 
     if [[ "$c" = $'\e' ]]; then
         # Escape Character
@@ -69,6 +77,7 @@ while [[ true ]]; do
             break
             ;;
         $'\e'|$'\cd') # ESC or Ctrl-D
+            tput clear
             echo "Canceled"
             break
             ;;
@@ -79,13 +88,4 @@ while [[ true ]]; do
             updatePathList
             ;;
     esac
-
-    # Calculate number of lines and cursor position to show
-    field_height=$(($(tput lines) - $HEADER_HEIGHT - 1))
-    path_list_height=$(echo "$path_list" | wc -l)
-    (($path_list_height > $field_height)) && path_list_height=$field_height
-    (($path_list_height < $cur)) && cur=$path_list_height
-    distpath=$(echo "$path_list" | sed -n "${cur}p")
-
-    showPaths "$path_list" "$field_height" "$cur"
 done

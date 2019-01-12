@@ -3,31 +3,34 @@
 HEADER_HEIGHT=3
 
 function showPaths {
-    path_list=$1
-    field_height=$2
-    cur=$3
+    path_list="$1"
+    field_height="$2"
+    curpos="$3"
+    distpath="$4"
 
     echo "$path_list" | head -n $field_height
-    tput cup $(($HEADER_HEIGHT + $cur - 1)) 0
+    tput cup $curpos 0
     tput rev
     echo "$distpath"
     tput sgr0
 }
 
-unset distpath
-unset keyword
-unset path_list
-cur=1
+distpath=
+keyword=
+path_list=
+cur=
 
 function updateKeyword {
     keyword=$1
-    cur=0
+    cur=1
     path_list=$(find -L -path "*${keyword// /*}*" -iname '*.gpg' | sed -e "s/^\.\///" -e "s/\.gpg$//")
 }
 
 tput init
 tput clear
 cd $PREFIX
+
+updateKeyword ""
 
 while [[ true ]]; do
     # Calculate number of lines and cursor position to show
@@ -40,7 +43,7 @@ while [[ true ]]; do
     tput civis
     tput clear
     tput cup $HEADER_HEIGHT 0
-    showPaths "$path_list" "$field_height" "$cur"
+    showPaths "$path_list" "$field_height" $(($HEADER_HEIGHT + $cur - 1)) "$distpath"
     tput cup 0 0
     tput cnorm
     IFS= read -p "Keyword: $keyword" -r -s -N 1 c

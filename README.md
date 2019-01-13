@@ -15,3 +15,4 @@ A [pass](https://www.passwordstore.org/) extension that enables to search passwo
 * `pass inc` to start and type keywords to search passwords.
 * Keywords can be some parts of password path split by spaces.
 * `<Ctrl-N>`/`<Ctrl-P>` or `<Down>`/`<Up>` to navigate the cursor.
+* Options --clip, -c are passed into the pass command.

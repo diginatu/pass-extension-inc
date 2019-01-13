@@ -3,6 +3,8 @@ pass inc
 
 A [pass](https://www.passwordstore.org/) extension that enables to search password interactively.
 
+![animation gif](./record.gif)
+
 ## Installation
 
 1. Enable password-store extensions by setting `PASSWORD_STORE_ENABLE_EXTENSIONS=true`
